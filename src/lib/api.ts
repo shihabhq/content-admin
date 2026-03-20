@@ -124,6 +124,8 @@ export interface Video {
   thumbnail: string | null;
   isFeatured: boolean;
   isRecommended: boolean;
+  creatorName?: string | null;
+  status?: "PUBLISHED" | "PENDING";
   createdAt: string;
   updatedAt: string;
   tags: VideoTagRelation[];
@@ -139,10 +141,17 @@ export interface VideosResponse {
 export async function fetchVideos(
   token: string,
   page = 1,
-  pageSize = 20
+  pageSize = 20,
+  status?: "PUBLISHED" | "PENDING"
 ): Promise<{ data?: VideosResponse; error?: ApiError }> {
+  const params = new URLSearchParams({
+    page: String(page),
+    pageSize: String(pageSize),
+  });
+  if (status) params.set("status", status);
+
   return request<VideosResponse>(
-    `/api/admin/videos?page=${page}&pageSize=${pageSize}`,
+    `/api/admin/videos?${params.toString()}`,
     { token }
   );
 }
@@ -164,6 +173,7 @@ export async function createVideo(
     isFeatured?: boolean;
     isRecommended?: boolean;
     tagIds?: string[];
+    creatorName?: string;
   }
 ): Promise<{ data?: Video; error?: ApiError }> {
   return request<Video>("/api/admin/videos", {
@@ -184,6 +194,8 @@ export async function updateVideo(
     isFeatured: boolean;
     isRecommended: boolean;
     tagIds: string[];
+    creatorName?: string;
+    status?: "PUBLISHED" | "PENDING";
   }>
 ): Promise<{ data?: Video; error?: ApiError }> {
   return request<Video>(`/api/admin/videos/${id}`, {

@@ -25,17 +25,23 @@ export default function VideosPage() {
   const [videos, setVideos] = useState<Video[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
+  const [statusFilter, setStatusFilter] = useState<"all" | "PENDING" | "PUBLISHED">("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
 
   const load = useCallback(
-    async (p = 1) => {
+    async (p = 1, status: "all" | "PENDING" | "PUBLISHED" = statusFilter) => {
       if (!token) return;
       setLoading(true);
       setError("");
-      const { data, error: err } = await fetchVideos(token, p, PAGE_SIZE);
+      const { data, error: err } = await fetchVideos(
+        token,
+        p,
+        PAGE_SIZE,
+        status === "all" ? undefined : status
+      );
       setLoading(false);
       if (err) {
         setError(getErrorMessage(err));
@@ -51,8 +57,8 @@ export default function VideosPage() {
   );
 
   useEffect(() => {
-    queueMicrotask(() => load(page));
-  }, [load, page]);
+    queueMicrotask(() => load(page, statusFilter));
+  }, [load, page, statusFilter]);
 
   async function handleDelete() {
     if (!deleteId || !token) return;
@@ -74,12 +80,44 @@ export default function VideosPage() {
     <div>
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-stone-900">Videos</h1>
-        <Link
-          href="/dashboard/videos/new"
-          className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700"
-        >
-          Add video
-        </Link>
+        <div className="flex items-center gap-3">
+          <div className="inline-flex rounded-lg border border-stone-300 bg-white text-xs overflow-hidden">
+            <button
+              type="button"
+              onClick={() => {
+                setStatusFilter("all");
+                setPage(1);
+              }}
+              className={`px-3 py-1.5 ${
+                statusFilter === "all"
+                  ? "bg-stone-800 text-white"
+                  : "text-stone-700 hover:bg-stone-100"
+              }`}
+            >
+              All
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setStatusFilter("PENDING");
+                setPage(1);
+              }}
+              className={`px-3 py-1.5 ${
+                statusFilter === "PENDING"
+                  ? "bg-stone-800 text-white"
+                  : "text-stone-700 hover:bg-stone-100"
+              }`}
+            >
+              Submissions
+            </button>
+          </div>
+          <Link
+            href="/dashboard/videos/new"
+            className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700"
+          >
+            Add video
+          </Link>
+        </div>
       </div>
 
       {error && (
@@ -105,6 +143,7 @@ export default function VideosPage() {
                 <tr className="border-b border-stone-200 bg-stone-50">
                   <th className="px-4 py-3 font-medium text-stone-700">Title</th>
                   <th className="px-4 py-3 font-medium text-stone-700">Tags</th>
+                  <th className="px-4 py-3 font-medium text-stone-700">Status</th>
                   <th className="px-4 py-3 font-medium text-stone-700">Featured</th>
                   <th className="px-4 py-3 font-medium text-stone-700">Recommended</th>
                   <th className="px-4 py-3 font-medium text-stone-700">Actions</th>
@@ -124,6 +163,17 @@ export default function VideosPage() {
                     <td className="px-4 py-3">
                       <span className="text-stone-600">
                         {v.tags?.map((t) => t.tag.name).join(", ") || "—"}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          v.status === "PENDING"
+                            ? "bg-amber-50 text-amber-800 border border-amber-200"
+                            : "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                        }`}
+                      >
+                        {v.status ?? "PUBLISHED"}
                       </span>
                     </td>
                     <td className="px-4 py-3">{v.isFeatured ? "Yes" : "No"}</td>

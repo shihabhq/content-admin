@@ -31,6 +31,7 @@ export default function NewVideoPage() {
   const [tagsString, setTagsString] = useState("");
   const [isFeatured, setIsFeatured] = useState(false);
   const [isRecommended, setIsRecommended] = useState(false);
+  const [creatorName, setCreatorName] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -40,8 +41,14 @@ export default function NewVideoPage() {
       if (!token) return;
       setError("");
       setSubmitting(true);
-      const names = tagsString.split(",").map((s) => s.trim()).filter(Boolean);
-      const { data: tagIds, error: tagErr } = await resolveTagNamesToIds(token, names);
+      const names = tagsString
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+      const { data: tagIds, error: tagErr } = await resolveTagNamesToIds(
+        token,
+        names,
+      );
       if (tagErr) {
         setSubmitting(false);
         setError(getErrorMessage(tagErr));
@@ -53,6 +60,7 @@ export default function NewVideoPage() {
         description: description || undefined,
         isFeatured,
         isRecommended,
+        creatorName: creatorName || undefined,
         tagIds: tagIds ?? [],
       });
       setSubmitting(false);
@@ -62,7 +70,17 @@ export default function NewVideoPage() {
       }
       if (data) router.push("/dashboard/videos");
     },
-    [token, title, youtubeUrl, description, tagsString, isFeatured, isRecommended, router]
+    [
+      token,
+      title,
+      youtubeUrl,
+      description,
+      tagsString,
+      isFeatured,
+      isRecommended,
+      router,
+      creatorName,
+    ],
   );
 
   return (
@@ -85,7 +103,9 @@ export default function NewVideoPage() {
 
       <form onSubmit={handleSubmit} className="max-w-2xl space-y-4">
         <div>
-          <label className="mb-1 block text-sm font-medium text-stone-700">Title *</label>
+          <label className="mb-1 block text-sm font-medium text-stone-700">
+            Title *
+          </label>
           <input
             type="text"
             value={title}
@@ -96,7 +116,9 @@ export default function NewVideoPage() {
           />
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium text-stone-700">YouTube URL *</label>
+          <label className="mb-1 block text-sm font-medium text-stone-700">
+            YouTube URL *
+          </label>
           <input
             type="url"
             value={youtubeUrl}
@@ -107,7 +129,9 @@ export default function NewVideoPage() {
           />
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium text-stone-700">Description</label>
+          <label className="mb-1 block text-sm font-medium text-stone-700">
+            Description
+          </label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
@@ -116,8 +140,24 @@ export default function NewVideoPage() {
           />
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium text-stone-700">Tags</label>
-          <p className="mb-1 text-xs text-stone-500">Comma-separated; used for recommendations on the frontend.</p>
+          <label className="mb-1 block text-sm font-medium text-stone-700">
+            Creator name
+          </label>
+          <input
+            type="text"
+            value={creatorName}
+            onChange={(e) => setCreatorName(e.target.value)}
+            placeholder="Name of the creator (optional)"
+            className={inputClass}
+          />
+        </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium text-stone-700">
+            Tags
+          </label>
+          <p className="mb-1 text-xs text-stone-500">
+            Comma-separated; used for recommendations on the frontend.
+          </p>
           <TagsInput value={tagsString} onChange={setTagsString} />
         </div>
         <div className="flex gap-6">
@@ -137,7 +177,9 @@ export default function NewVideoPage() {
               onChange={(e) => setIsRecommended(e.target.checked)}
               className="size-4 rounded border-stone-400 text-amber-600 focus:ring-amber-500"
             />
-            <span className="text-sm font-medium text-stone-800">Recommended</span>
+            <span className="text-sm font-medium text-stone-800">
+              Recommended
+            </span>
           </label>
         </div>
         <div className="flex gap-2 pt-4">
