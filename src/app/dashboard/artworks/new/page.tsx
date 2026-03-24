@@ -28,6 +28,7 @@ export default function NewArtworkPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [creatorName, setCreatorName] = useState("");
   const [tagsString, setTagsString] = useState("");
   const [isFeatured, setIsFeatured] = useState(false);
   const [isPublished, setIsPublished] = useState(true);
@@ -67,6 +68,7 @@ export default function NewArtworkPage() {
       const { data, error: err } = await createArtwork(token, {
         title,
         content: content || undefined,
+        creatorName: creatorName || undefined,
         isFeatured,
         isPublished,
         tagIds: tagIds ?? [],
@@ -79,7 +81,7 @@ export default function NewArtworkPage() {
       }
       if (data) router.push("/dashboard/artworks");
     },
-    [token, title, content, tagsString, isFeatured, isPublished, imageFile, router]
+    [token, title, content, creatorName, tagsString, isFeatured, isPublished, imageFile, router]
   );
 
   return (
@@ -139,6 +141,18 @@ export default function NewArtworkPage() {
             onChange={(e) => setContent(e.target.value)}
             rows={3}
             className={inputClass}
+          />
+        </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium text-stone-700">
+            Creator name
+          </label>
+          <input
+            type="text"
+            value={creatorName}
+            onChange={(e) => setCreatorName(e.target.value)}
+            className={inputClass}
+            placeholder="Name of the creator (optional)"
           />
         </div>
         <div>

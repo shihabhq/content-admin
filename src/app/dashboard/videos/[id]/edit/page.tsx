@@ -39,6 +39,8 @@ export default function EditVideoPage() {
   const [tagsString, setTagsString] = useState("");
   const [isFeatured, setIsFeatured] = useState(false);
   const [isRecommended, setIsRecommended] = useState(false);
+  const [creatorName, setCreatorName] = useState("");
+  const [status, setStatus] = useState<"PUBLISHED" | "PENDING">("PUBLISHED");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -53,6 +55,8 @@ export default function EditVideoPage() {
         setDescription(videoRes.data.description ?? "");
         setIsFeatured(videoRes.data.isFeatured);
         setIsRecommended(videoRes.data.isRecommended);
+          setCreatorName(videoRes.data.creatorName ?? "");
+          setStatus(videoRes.data.status ?? "PUBLISHED");
         setTagsString(
           videoRes.data.tags?.map((t) => t.tag.name).join(", ") ?? ""
         );
@@ -80,6 +84,8 @@ export default function EditVideoPage() {
         description: description || undefined,
         isFeatured,
         isRecommended,
+        creatorName: creatorName || undefined,
+        status,
         tagIds: tagIds ?? [],
       });
       setSubmitting(false);
@@ -89,7 +95,19 @@ export default function EditVideoPage() {
       }
       if (data) router.push("/dashboard/videos");
     },
-    [token, id, title, youtubeUrl, description, tagsString, isFeatured, isRecommended, router]
+    [
+      token,
+      id,
+      title,
+      youtubeUrl,
+      description,
+      tagsString,
+      isFeatured,
+      isRecommended,
+      creatorName,
+      status,
+      router,
+    ]
   );
 
   if (loading) return <p className="text-stone-500">Loading…</p>;
@@ -148,6 +166,38 @@ export default function EditVideoPage() {
           <label className="mb-1 block text-sm font-medium text-stone-700">Tags</label>
           <p className="mb-1 text-xs text-stone-500">Comma-separated; used for recommendations on the frontend.</p>
           <TagsInput value={tagsString} onChange={setTagsString} />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="mb-1 block text-sm font-medium text-stone-700">
+              Creator name
+            </label>
+            <input
+              type="text"
+              value={creatorName}
+              onChange={(e) => setCreatorName(e.target.value)}
+              className={inputClass}
+              placeholder="Name provided by submitter"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-stone-700">
+              Status
+            </label>
+            <select
+              value={status}
+              onChange={(e) =>
+                setStatus((e.target.value as "PUBLISHED" | "PENDING") || "PUBLISHED")
+              }
+              className={inputClass}
+            >
+              <option value="PUBLISHED">Published</option>
+              <option value="PENDING">Pending review</option>
+            </select>
+            <p className="mt-1 text-xs text-stone-500">
+              Set to &quot;Published&quot; to make this video visible on the public site.
+            </p>
+          </div>
         </div>
         <div className="flex gap-6">
           <label className="flex items-center gap-2">
