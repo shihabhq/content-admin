@@ -36,6 +36,7 @@ export default function EditArtworkPage() {
   const [artwork, setArtwork] = useState<Artwork | null>(null);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [creatorName, setCreatorName] = useState("");
   const [tagsString, setTagsString] = useState("");
   const [isFeatured, setIsFeatured] = useState(false);
   const [isPublished, setIsPublished] = useState(true);
@@ -52,6 +53,7 @@ export default function EditArtworkPage() {
         setArtwork(artworkRes.data);
         setTitle(artworkRes.data.title);
         setContent(artworkRes.data.content ?? "");
+        setCreatorName(artworkRes.data.creatorName ?? "");
         setIsFeatured(artworkRes.data.isFeatured);
         setIsPublished(artworkRes.data.isPublished);
         setTagsString(
@@ -89,6 +91,7 @@ export default function EditArtworkPage() {
       const { data, error: err } = await updateArtwork(token, id, {
         title,
         content,
+        creatorName: creatorName || undefined,
         isFeatured,
         isPublished,
         tagIds: tagIds ?? [],
@@ -101,7 +104,7 @@ export default function EditArtworkPage() {
       }
       if (data) router.push("/dashboard/artworks");
     },
-    [token, id, title, content, tagsString, isFeatured, isPublished, imageFile, router]
+    [token, id, title, content, creatorName, tagsString, isFeatured, isPublished, imageFile, router]
   );
 
   if (loading) return <p className="text-stone-500">Loading…</p>;
@@ -176,6 +179,18 @@ export default function EditArtworkPage() {
             onChange={(e) => setContent(e.target.value)}
             rows={3}
             className={inputClass}
+          />
+        </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium text-stone-700">
+            Creator name
+          </label>
+          <input
+            type="text"
+            value={creatorName}
+            onChange={(e) => setCreatorName(e.target.value)}
+            className={inputClass}
+            placeholder="Name of the creator (optional)"
           />
         </div>
         <div>

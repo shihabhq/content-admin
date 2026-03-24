@@ -229,6 +229,8 @@ export interface Artwork {
   imageUrl: string;
   isFeatured: boolean;
   isPublished: boolean;
+  creatorName?: string | null;
+  status?: "PUBLISHED" | "PENDING";
   createdAt: string;
   updatedAt: string;
   tags: ArtworkTagRelation[];
@@ -244,10 +246,17 @@ export interface ArtworksResponse {
 export async function fetchArtworks(
   token: string,
   page = 1,
-  pageSize = 20
+  pageSize = 20,
+  status?: "PUBLISHED" | "PENDING"
 ): Promise<{ data?: ArtworksResponse; error?: ApiError }> {
+  const params = new URLSearchParams({
+    page: String(page),
+    pageSize: String(pageSize),
+  });
+  if (status) params.set("status", status);
+
   return request<ArtworksResponse>(
-    `/api/admin/artworks?page=${page}&pageSize=${pageSize}`,
+    `/api/admin/artworks?${params.toString()}`,
     { token }
   );
 }
@@ -266,6 +275,8 @@ export async function createArtwork(
     content?: string;
     isFeatured?: boolean;
     isPublished?: boolean;
+    creatorName?: string;
+    status?: "PUBLISHED" | "PENDING";
     tagIds?: string[];
     image: File;
   }
@@ -275,6 +286,8 @@ export async function createArtwork(
   if (form.content != null) formData.append("content", form.content);
   formData.append("isFeatured", String(!!form.isFeatured));
   formData.append("isPublished", String(form.isPublished !== false));
+  if (form.creatorName != null) formData.append("creatorName", form.creatorName);
+  if (form.status != null) formData.append("status", form.status);
   formData.append("tagIds", JSON.stringify(form.tagIds || []));
   formData.append("image", form.image);
 
@@ -293,6 +306,8 @@ export async function updateArtwork(
     content?: string;
     isFeatured?: boolean;
     isPublished?: boolean;
+    creatorName?: string;
+    status?: "PUBLISHED" | "PENDING";
     tagIds?: string[];
     image?: File;
   }
@@ -304,6 +319,9 @@ export async function updateArtwork(
     formData.append("isFeatured", String(form.isFeatured));
   if (form.isPublished !== undefined)
     formData.append("isPublished", String(form.isPublished));
+  if (form.creatorName !== undefined)
+    formData.append("creatorName", form.creatorName);
+  if (form.status !== undefined) formData.append("status", form.status);
   if (form.tagIds !== undefined)
     formData.append("tagIds", JSON.stringify(form.tagIds));
   if (form.image) formData.append("image", form.image);
